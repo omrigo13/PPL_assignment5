@@ -76,7 +76,7 @@ versatileAuthor(AuthorName) :-
 % Signature: notEqualGenres(FirstGenre, SecondGenre, ThirdGenre)/3
 % Purpose: true if the genres of 3 books is different
 % equal
-notEqualGenres(First, Second, Third) :-
-    (First =\= Second),
-    (Second =\= Third),
-    (Third =\= First).
+notEqualGenres(FirstGenreId, SecondGenreId, ThirdGenreId) :-
+    (FirstGenreId =\= SecondGenreId),
+    (SecondGenreId =\= ThirdGenreId),
+    (ThirdGenreId =\= FirstGenreId).
