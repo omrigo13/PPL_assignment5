@@ -40,3 +40,43 @@ book("The Lord of the Rings", 4, 4, 1250).
 
 % You can add more facts.
 % Fill in the Purpose, Signature as requested in the instructions here
+
+% Signature: authorOfGenre(GenreName, AuthorName)/2
+% Purpose: true if an author by the name {AuthorName} has written a book
+% belonging to the genre named {GenreName}
+authorOfGenre(GenreName, AuthorName) :-
+	genre(GenreId, GenreName),
+	author(AuthorId, AuthorName),
+	book(_A, AuthorId, GenreId, _B).
+
+% Signature: longestBook(AuthorId, BookName)/2
+% Purpose: true if the longest book that an author with the ID
+% {AuthorId} has written in titled {BookName}
+longestBook(AuthorId, BookName) :-
+	book(BookName, AuthorId, _A, Length),
+	not(longerBook(AuthorId, Length)).
+
+% Signature: longerBook(AuthorId, Length)/2
+% Purpose: true if there is a longer book by the author with
+% the ID {AuthorId}
+longerBook(AuthorId, Length) :-
+    book(_B, AuthorId, _C, newLength),
+    (newLength > Length).
+
+% Signature: versatileAuthor(AuthorName)/1
+% Purpose: true if an author by the name {AuthorName} has written books
+% in at least three different genres
+versatileAuthor(AuthorName) :-
+    author(AuthorId, AuthorName),
+    book(_A, AuthorId, FirstGenre, _B),
+    book(_C, AuthorId, SecondGenre, _D),
+    book(_E, AuthorId, ThirdGenre, _F),
+    notEqualGenres(FirstGenre, SecondGenre, ThirdGenre).
+
+% Signature: notEqualGenres(FirstGenre, SecondGenre, ThirdGenre)/3
+% Purpose: true if the genres of 3 books is different
+% equal
+notEqualGenres(First, Second, Third) :-
+    (First =\= Second),
+    (Second =\= Third),
+    (Third =\= First).
