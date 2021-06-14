@@ -60,9 +60,9 @@ longestBook(AuthorId, BookName) :-
 % Purpose: true if there is a longer book by the author with
 % the ID {AuthorId}
 longerBook(AuthorId, Length) :-
-    book(_B, AuthorId, _C, newLength),
-    (newLength > Length).
-
+    book(_B, AuthorId, _C, _D),
+    (_D > Length).
+	
 % Signature: versatileAuthor(AuthorName)/1
 % Purpose: true if an author by the name {AuthorName} has written books
 % in at least three different genres
