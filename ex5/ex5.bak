@@ -14,7 +14,7 @@
   (lambda (lzl)
     ((cdr lzl))))
 
-(define leaf? (lambda (x) (not (list? x))))
+;(define leaf? (lambda (x) (not (list? x))))
 
 ;; Signature: map-lzl(f, lz)
 ;; Type: [[T1 -> T2] * Lzl(T1) -> Lzl(T2)]
@@ -52,37 +52,33 @@
  (lambda (lst1 lst2 cont)
    (if (empty? lst1)
        (cont lst2)
-       (append$ (cdr lst1)
-                lst2
-                (lambda (x) (cont (cons (car lst1) x)))
-       )
-   )
- )
+       (append$ (cdr lst1) lst2 (lambda (x) (cont (cons (car lst1) x)))))
+  )
 )
 
 ;;; Q1.2
 ; Signature: equal-trees$(tree1, tree2, succ, fail) 
 ; Type: [Tree * Tree * [Tree ->T1] * [Pair->T2] -> T1 U T2
 ; Purpose: Determines the structure identity of a given two lists, with post-processing succ/fail
-(define equal-trees$
+(define leaf? (lambda (x) (not (list? x))))
+(define same (lambda (x) x))
+(define equal-trees$ 
  (lambda (tree1 tree2 succ fail)
-   (cond
-   ((and (empty? tree1) (empty? tree2))(succ '()))
-   ((and (empty? tree1) (not (empty? tree2))) (fail (cons tree1 tree2)))
-   ((and (not (empty? tree1)) (empty? tree2)) (fail (cons tree1 tree2)))
-   ((and (leaf? tree1) (leaf? tree2)) (succ (cons tree1 tree2)))
-   ((and (leaf? tree1) (not (leaf? tree2))) (fail (cons tree1 tree2)))
-   ((and (not (leaf? tree1)) (leaf? tree2)) (fail (cons tree1 tree2)))
-   (else (equal-trees$ (car tree1) (car tree2)
-                                    (lambda (equal-car)
-                                      (equal-trees$ (cdr tree1) (cdr tree2)
-                                       (lambda (equal-cdr)
-                                        (succ (cons equal-car equal-cdr))) fail))
-                                    fail))
-   )
+   ((cond
+    ((and (empty? tree1) (empty? tree2)) (succ '()))
+    ((or (empty? tree1) (empty? tree2)) (fail (cons tree1 (cons tree2 '()))))
+    ((and (leaf? tree1) (leaf? tree2)) (succ (cons tree1 (cons tree2 '()))))
+    ((or (leaf? tree1) (leaf? tree2)) (fail (cons tree1 (cons tree2 '()))))
+    (else (equal-trees$ (car tree1) (car tree2)
+                        (lambda (equal_car)
+                         ((lambda (res)
+                          (cond
+                          ((empty? res) equal_car)
+                          ((empty? equal_car) res)
+                          (else (append$ (cons equal_car '()) (cons res '()) same))))(equal-trees$ (cdr tree1) (cdr tree2) succ fail)))
+                        same))))
  )
 )
-
 
 ;;; Q2a
 ; Signature: reduce1-lzl(reducer, init, lzl) 
@@ -115,14 +111,14 @@
 ; Purpose: Returns the reduced values of the given lazy list items as a lazy list
 (define reduce3-lzl 
   (lambda (reducer init lzl)
-    (reduce3-lzl-n reducer init lzl 1)
+    (lambda (reducer init lzl)
+    (reduce3-lzl-n reducer init lzl 1))
   )
 )
 
 (define reduce3-lzl-n
   (lambda (reducer init lzl n)
-    (cons-lzl (reduce2-lzl reducer init lzl n) (lambda () (reduce3-lzl-n reducer init lzl (+ n 1))))
-  )
+    (cons-lzl (reduce2-lzl reducer init lzl n) (lambda () (reduce3-lzl-n reducer init lzl (+ n 1)))))
 )
  
 ;;; Q2e
@@ -139,16 +135,15 @@
 ; Signature: generate-pi-approximations() 
 ; Type: Empty -> Lzl<Number>
 ; Purpose: Returns the approximations of pi as a lazy list
-(define merge-lists-helper
+(define combine-lists
   (lambda (lzl1 lzl2)
-    (cons (* (head lzl1) (head lzl2) 8) (lambda () (merge-lists-helper (tail lzl1) (tail lzl2))))
+    (cons (* (head lzl1) (head lzl2)) (lambda () (combine-lists (tail lzl1) (tail lzl2))))
   )
 )
 
 (define generate-pi-approximations
   (lambda ()
     (let ((lst1 (map-lzl (lambda (x) (/ 1 x)) (integers-steps-from 1 4))) (lst2 (map-lzl (lambda (x) (/ 1 x)) (integers-steps-from 3 4))))
-     (reduce3-lzl + 0 (merge-lists-helper lst1 lst2))
-    )
-  )
-)
+     (reduce3-lzl + 0 (combine-lists lst1 lst2)))
+   )
+ )
