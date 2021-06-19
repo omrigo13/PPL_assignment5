@@ -53,30 +53,16 @@ authorOfGenre(GenreName, AuthorName) :-
 % Purpose: true if the longest book that an author with the ID
 % {AuthorId} has written in titled {BookName}
 longestBook(AuthorId, BookName) :-
-	book(BookName, AuthorId, _A, Length),
-	not(longerBook(AuthorId, Length)).
-
-% Signature: longerBook(AuthorId, Length)/2
-% Purpose: true if there is a longer book by the author with
-% the ID {AuthorId}
-longerBook(AuthorId, Length) :-
-    book(_B, AuthorId, _C, _D),
-    (_D > Length).
+	book(BookName, AuthorId, _, Length),
+    findall(Pages,(book(_,AuthorId,_,Pages)),PagesList),
+    max_list(PagesList,Length).
 	
 % Signature: versatileAuthor(AuthorName)/1
 % Purpose: true if an author by the name {AuthorName} has written books
 % in at least three different genres
 versatileAuthor(AuthorName) :-
     author(AuthorId, AuthorName),
-    book(_A, AuthorId, FirstGenre, _B),
-    book(_C, AuthorId, SecondGenre, _D),
-    book(_E, AuthorId, ThirdGenre, _F),
-    notEqualGenres(FirstGenre, SecondGenre, ThirdGenre).
-
-% Signature: notEqualGenres(FirstGenre, SecondGenre, ThirdGenre)/3
-% Purpose: true if the genres of 3 books is different
-% equal
-notEqualGenres(FirstGenreId, SecondGenreId, ThirdGenreId) :-
-    (FirstGenreId =\= SecondGenreId),
-    (SecondGenreId =\= ThirdGenreId),
-    (ThirdGenreId =\= FirstGenreId).
+    findall(GenreId, (book(_, AuthorId, GenreId, _)), GenresLength),
+    sort(GenresLength, GenresLength),
+    length(GenresLength, Len),
+    maplist(between(3, inf), [Len]).

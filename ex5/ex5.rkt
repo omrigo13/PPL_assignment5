@@ -54,7 +54,7 @@
        (cont lst2)
        (append$ (cdr lst1)
                 lst2
-                (lambda (x) (cont (cons (car lst1) x)))
+                (lambda (res) (cont (cons (car lst1) res)))
        )
    )
  )
@@ -115,13 +115,10 @@
 ; Purpose: Returns the reduced values of the given lazy list items as a lazy list
 (define reduce3-lzl 
   (lambda (reducer init lzl)
-    (reduce3-lzl-n reducer init lzl 1)
-  )
-)
-
-(define reduce3-lzl-n
-  (lambda (reducer init lzl n)
-    (cons-lzl (reduce2-lzl reducer init lzl n) (lambda () (reduce3-lzl-n reducer init lzl (+ n 1))))
+   (if (empty-lzl? lzl)
+        init
+        (cons-lzl (reducer init (head lzl))
+                  (lambda ()(reduce3-lzl reducer (reducer init (head lzl))(tail lzl)) )))
   )
 )
  
@@ -139,16 +136,8 @@
 ; Signature: generate-pi-approximations() 
 ; Type: Empty -> Lzl<Number>
 ; Purpose: Returns the approximations of pi as a lazy list
-(define merge-lists-helper
-  (lambda (lzl1 lzl2)
-    (cons (* (head lzl1) (head lzl2) 8) (lambda () (merge-lists-helper (tail lzl1) (tail lzl2))))
-  )
-)
-
 (define generate-pi-approximations
   (lambda ()
-    (let ((lst1 (map-lzl (lambda (x) (/ 1 x)) (integers-steps-from 1 4))) (lst2 (map-lzl (lambda (x) (/ 1 x)) (integers-steps-from 3 4))))
-     (reduce3-lzl + 0 (merge-lists-helper lst1 lst2))
-    )
+     (reduce3-lzl + 0 (map-lzl (lambda (x) (* (/ 1 x) (/ 1 (+ x 2)) 8)) (integers-steps-from 1 4)))
   )
 )
